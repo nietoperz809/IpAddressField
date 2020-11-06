@@ -1,23 +1,26 @@
 import javax.swing.*;
+import javax.swing.text.DefaultEditorKit;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
 
 public class JIp4AddressInput extends JTextField
 {
     private final char[] buff = "  0.  0.  0.  0".toCharArray();
-//    private final byte[] buff = {
-//            (byte)' ', (byte)' ', (byte)'0', (byte)'.',
-//            (byte)' ', (byte)' ', (byte)'0', (byte)'.',
-//            (byte)' ', (byte)' ', (byte)'0', (byte)'.',
-//            (byte)' ', (byte)' ', (byte)'0'};
 
     private int bpos;
+
+    private void putnum (int num, int offset)
+    {
+        int a = num/100;
+        num -= a*100;
+        int b = num/10;
+        num -= b*10;
+        buff[offset] = (char)('0'+a);
+        buff[offset+1] = (char)('0'+b);
+        buff[offset+2] = (char)('0'+num);
+    }
 
     private void align (int base)
     {
@@ -68,14 +71,26 @@ public class JIp4AddressInput extends JTextField
         bpos = bpos == 0 ? bpos : bpos -1;
     }
 
-    private boolean setChar (char c)
+    private void backspace()
     {
-        if (bpos == 3 || bpos == 7 || bpos == 11 || bpos == 15)
+        back();
+        if (bpos == 3 || bpos == 7 || bpos == 11)
         {
-            return true;
+            return;
         }
-        buff[bpos] = c;
-        return false;
+        if (bpos < 15)
+            buff[bpos] = ' ';
+    }
+
+    private void setChar (char c)
+    {
+        if (bpos == 3 || bpos == 7 || bpos == 11)
+        {
+            fwd();
+        }
+        if (bpos < 15)
+            buff[bpos] = c;
+        fwd();
     }
 
     public JIp4AddressInput()
@@ -83,6 +98,10 @@ public class JIp4AddressInput extends JTextField
         super();
         setPreferredSize(new Dimension(110, 30));
         setEditable(false);
+
+        Action beep = getActionMap().get(DefaultEditorKit.deletePrevCharAction);
+        beep.setEnabled (false);
+
         setText (new String (buff));
 
         addFocusListener(new FocusListener()
@@ -106,21 +125,17 @@ public class JIp4AddressInput extends JTextField
         addKeyListener(new KeyAdapter()
         {
             @Override
-            public void keyReleased (KeyEvent e)
+            public void keyTyped (KeyEvent e)
             {
                 bpos = getCaretPosition();
                 char c = e.getKeyChar();
                 if ((c>= '0' && c<= '9') || c == ' ')
                 {
-                    while (setChar(c) && bpos != 15)
-                        fwd();
-                    fwd ();
+                    setChar (c);
                 }
                 else if (c == KeyEvent.VK_BACK_SPACE)
                 {
-                    do {
-                        back();
-                    } while (setChar(' '));
+                    backspace();
                 }
                 else if (c == KeyEvent.VK_ENTER)
                 {
@@ -131,6 +146,8 @@ public class JIp4AddressInput extends JTextField
             }
         });
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////
 
     public InetAddress getAddress()
     {
@@ -145,24 +162,13 @@ public class JIp4AddressInput extends JTextField
         }
     }
 
-    private void putNumber (int num, int offset)
-    {
-        int a = num/100;
-        num -= a*100;
-        int b = num/10;
-        num -= b*10;
-        buff[offset] = (char)('0'+a);
-        buff[offset+1] = (char)('0'+b);
-        buff[offset+2] = (char)('0'+num);
-    }
-
     public void putAddress (InetAddress in)
     {
         byte[] adr = in.getAddress();
-        putNumber(adr[0]&0xff, 0);
-        putNumber(adr[1]&0xff, 4);
-        putNumber(adr[2]&0xff, 8);
-        putNumber(adr[3]&0xff, 12);
+        putnum(adr[0]&0xff, 0);
+        putnum(adr[1]&0xff, 4);
+        putnum(adr[2]&0xff, 8);
+        putnum(adr[3]&0xff, 12);
         alignAll();
         setText (new String(buff));
     }
