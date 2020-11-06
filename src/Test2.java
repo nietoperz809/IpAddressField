@@ -11,7 +11,7 @@ public class Test2 extends JFrame
         setTitle("My Gui");
         setSize(400, 400);
         // Create JButton and JPanel
-        JButton button = new JButton("-->");
+        JButton button = new JButton(">>");
         JIp4AddressInput jt = new JIp4AddressInput();
         JIp4AddressInput jt2 = new JIp4AddressInput();
         JPanel panel = new JPanel();
@@ -28,8 +28,7 @@ public class Test2 extends JFrame
         {
             InetAddress in = jt.getAddress();
             jt2.putAddress(in);
-            System.out.println(in);
-
+            System.out.println(jt);
         });
     }
 

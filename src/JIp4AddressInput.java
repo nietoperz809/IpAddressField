@@ -4,172 +4,183 @@ import java.awt.*;
 import java.awt.event.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
-public class JIp4AddressInput extends JTextField
+public final class JIp4AddressInput extends JTextField
 {
     private final char[] buff = "  0.  0.  0.  0".toCharArray();
 
-    private int bpos;
+    private int bpos = 0;
 
-    private void putnum (int num, int offset)
+    private void putnum (int num, final int offset)
     {
-        int a = num/100;
+        final int a = num/100;
         num -= a*100;
-        int b = num/10;
+        final int b = num/10;
         num -= b*10;
-        buff[offset] = (char)('0'+a);
-        buff[offset+1] = (char)('0'+b);
-        buff[offset+2] = (char)('0'+num);
+        this.buff[offset] = (char)('0'+a);
+        this.buff[offset+1] = (char)('0'+b);
+        this.buff[offset+2] = (char)('0'+num);
     }
 
-    private void align (int base)
+    private void align (final int base)
     {
-        int end = base+3;
+        final int end = base+3;
         StringBuffer sb = new StringBuffer();
         for (int s=base; s<end; s++)
         {
-            if (buff[s] != ' ')
-                sb.append(buff[s]);
+            if (' ' != buff[s])
+                sb.append(this.buff[s]);
         }
-        while (sb.length() > 1 && sb.charAt(0) == '0')
+        while (1 < sb.length() && '0' == sb.charAt(0))
             sb.delete(0,1);
-        while (sb.length() < 3)
+        while (3 > sb.length())
             sb.insert(0, ' ');
         try
         {
-            int num = Integer.parseInt(sb.toString().trim());
-            if (num > 255)
+            final int num = Integer.parseInt(sb.toString().trim());
+            if (255 < num)
                 sb = new StringBuffer("255");
-            if (num < 0)
+            if (0 > num)
                 sb = new StringBuffer("  0");
         }
-        catch (NumberFormatException e)
+        catch (final NumberFormatException e)
         {
             sb = new StringBuffer("  0");
         }
         for (int s=base; s<end; s++)
         {
-            buff[s] = sb.charAt(s-base);
+            this.buff[s] = sb.charAt(s-base);
         }
     }
 
     private void alignAll()
     {
-        align(0);
-        align (4);
-        align(8);
-        align (12);
+        this.align(0);
+        this.align(4);
+        this.align(8);
+        this.align(12);
     }
 
     private void fwd ()
     {
-        bpos = bpos == 15 ? bpos : bpos +1;
+        this.bpos = 15 == bpos ? this.bpos : this.bpos +1;
     }
 
     private void back ()
     {
-        bpos = bpos == 0 ? bpos : bpos -1;
+        this.bpos = 0 == bpos ? this.bpos : this.bpos -1;
     }
 
     private void backspace()
     {
-        back();
-        if (bpos == 3 || bpos == 7 || bpos == 11)
+        this.back();
+        if (3 == bpos || 7 == bpos || 11 == bpos)
         {
             return;
         }
-        if (bpos < 15)
-            buff[bpos] = ' ';
+        if (15 > bpos)
+            this.buff[this.bpos] = ' ';
     }
 
-    private void setChar (char c)
+    private void setChar (final char c)
     {
-        if (bpos == 3 || bpos == 7 || bpos == 11)
+        if (3 == bpos || 7 == bpos || 11 == bpos)
         {
-            fwd();
+            this.fwd();
         }
-        if (bpos < 15)
-            buff[bpos] = c;
-        fwd();
+        if (15 > bpos)
+            this.buff[this.bpos] = c;
+        this.fwd();
     }
 
     public JIp4AddressInput()
     {
-        super();
-        setPreferredSize(new Dimension(110, 30));
-        setEditable(false);
+        this.setPreferredSize(new Dimension(110, 30));
+        this.setEditable(false);
 
-        Action beep = getActionMap().get(DefaultEditorKit.deletePrevCharAction);
+        final Action beep = this.getActionMap().get(DefaultEditorKit.deletePrevCharAction);
         beep.setEnabled (false);
 
-        setText (new String (buff));
+        this.setFont(new Font("monospaced", Font.PLAIN, 12));
+        this.setText(new String (this.buff));
 
-        addFocusListener(new FocusListener()
+        this.setCaret(new MyCaret());
+
+        this.addFocusListener(new FocusListener()
         {
             @Override
-            public void focusGained(FocusEvent e)
+            public void focusGained(final FocusEvent e)
             {
-                setText (new String (buff));
-                setCaretPosition(0);
-                getCaret().setVisible(true);
+                JIp4AddressInput.this.setText(new String (JIp4AddressInput.this.buff));
+                JIp4AddressInput.this.setCaretPosition(0);
+                JIp4AddressInput.this.getCaret().setVisible(true);
             }
 
             @Override
-            public void focusLost(FocusEvent e)
+            public void focusLost(final FocusEvent e)
             {
-                alignAll();
-                setText(new String(buff));
+                JIp4AddressInput.this.alignAll();
+                JIp4AddressInput.this.setText(new String(JIp4AddressInput.this.buff));
             }
         });
 
-        addKeyListener(new KeyAdapter()
+        this.addKeyListener(new KeyAdapter()
         {
             @Override
-            public void keyTyped (KeyEvent e)
+            public void keyTyped (final KeyEvent e)
             {
-                bpos = getCaretPosition();
-                char c = e.getKeyChar();
-                if ((c>= '0' && c<= '9') || c == ' ')
+                JIp4AddressInput.this.bpos = JIp4AddressInput.this.getCaretPosition();
+                final char c = e.getKeyChar();
+                if (('0' <= c && '9' >= c) || ' ' == c)
                 {
-                    setChar (c);
+                    JIp4AddressInput.this.setChar(c);
                 }
-                else if (c == KeyEvent.VK_BACK_SPACE)
+                else if (KeyEvent.VK_BACK_SPACE == c)
                 {
-                    backspace();
+                    JIp4AddressInput.this.backspace();
                 }
-                else if (c == KeyEvent.VK_ENTER)
+                else if (KeyEvent.VK_ENTER == c)
                 {
-                    alignAll();
+                    JIp4AddressInput.this.alignAll();
                 }
-                setText(new String(buff));
-                setCaretPosition(bpos);
+                JIp4AddressInput.this.setText(new String(JIp4AddressInput.this.buff));
+                JIp4AddressInput.this.setCaretPosition(JIp4AddressInput.this.bpos);
             }
         });
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////
 
-    public InetAddress getAddress()
+    public final InetAddress getAddress()
     {
-        String[] parts = new String(buff).split("\\.");
-        byte[] adr = new byte[4];
-        for (int s=0; s<4; s++)
+        final String[] parts = new String(this.buff).split("\\.");
+        final byte[] adr = new byte[4];
+        for (int s = 0; 4 > s; s++)
             adr[s] = (byte)Integer.parseInt(parts[s].trim());
         try {
             return InetAddress.getByAddress(adr);
-        } catch (UnknownHostException e) {
+        } catch (final UnknownHostException e) {
             return null;
         }
     }
 
-    public void putAddress (InetAddress in)
+    public final void putAddress(final InetAddress in)
     {
-        byte[] adr = in.getAddress();
-        putnum(adr[0]&0xff, 0);
-        putnum(adr[1]&0xff, 4);
-        putnum(adr[2]&0xff, 8);
-        putnum(adr[3]&0xff, 12);
-        alignAll();
-        setText (new String(buff));
+        final byte[] adr = in.getAddress();
+        this.putnum(adr[0]&0xff, 0);
+        this.putnum(adr[1]&0xff, 4);
+        this.putnum(adr[2]&0xff, 8);
+        this.putnum(adr[3]&0xff, 12);
+        this.alignAll();
+        this.setText(new String(this.buff));
+    }
+
+    @Override
+    public String toString()
+    {
+        return "JIp4AddressInput{" +
+                "buff=" + Arrays.toString(buff) +
+                '}';
     }
 }
