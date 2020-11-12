@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.plaf.ColorUIResource;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -6,7 +7,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
-public final class JIp4AddressInput extends JTextField
+public final class JIp4Control extends JTextField
 {
     private final char[] buff = "  0.  0.  0.  0".toCharArray();
 
@@ -94,7 +95,7 @@ public final class JIp4AddressInput extends JTextField
         this.fwd();
     }
 
-    public JIp4AddressInput()
+    private void delayedConstructor()
     {
         this.setPreferredSize(new Dimension(110, 30));
         this.setEditable(false);
@@ -111,16 +112,16 @@ public final class JIp4AddressInput extends JTextField
             @Override
             public void focusGained(final FocusEvent e)
             {
-                JIp4AddressInput.this.setText(new String (JIp4AddressInput.this.buff));
-                JIp4AddressInput.this.setCaretPosition(0);
-                JIp4AddressInput.this.getCaret().setVisible(true);
+                JIp4Control.this.setText(new String (JIp4Control.this.buff));
+                JIp4Control.this.setCaretPosition(0);
+                JIp4Control.this.getCaret().setVisible(true);
             }
 
             @Override
             public void focusLost(final FocusEvent e)
             {
-                JIp4AddressInput.this.alignAll();
-                JIp4AddressInput.this.setText(new String(JIp4AddressInput.this.buff));
+                JIp4Control.this.alignAll();
+                JIp4Control.this.setText(new String(JIp4Control.this.buff));
             }
         });
 
@@ -129,24 +130,31 @@ public final class JIp4AddressInput extends JTextField
             @Override
             public void keyTyped (final KeyEvent e)
             {
-                JIp4AddressInput.this.bpos = JIp4AddressInput.this.getCaretPosition();
+                JIp4Control.this.bpos = JIp4Control.this.getCaretPosition();
                 final char c = e.getKeyChar();
                 if (('0' <= c && '9' >= c) || ' ' == c)
                 {
-                    JIp4AddressInput.this.setChar(c);
+                    JIp4Control.this.setChar(c);
                 }
                 else if (KeyEvent.VK_BACK_SPACE == c)
                 {
-                    JIp4AddressInput.this.backspace();
+                    JIp4Control.this.backspace();
                 }
                 else if (KeyEvent.VK_ENTER == c)
                 {
-                    JIp4AddressInput.this.alignAll();
+                    JIp4Control.this.alignAll();
                 }
-                JIp4AddressInput.this.setText(new String(JIp4AddressInput.this.buff));
-                JIp4AddressInput.this.setCaretPosition(JIp4AddressInput.this.bpos);
+                JIp4Control.this.setText(new String(JIp4Control.this.buff));
+                JIp4Control.this.setCaretPosition(JIp4Control.this.bpos);
             }
         });
+    }
+
+    public JIp4Control()
+    {
+        UIManager.put("TextField.inactiveBackground", new ColorUIResource(new Color(255, 255, 255)));
+
+        SwingUtilities.invokeLater(() -> delayedConstructor());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////
@@ -189,7 +197,7 @@ public final class JIp4AddressInput extends JTextField
      * @see DefaultEditorKit#deletePrevCharAction
      * @see DefaultEditorKit#getActions
      */
-    public static class DeletePrevCharActionNoBeep extends TextAction {
+    static class DeletePrevCharActionNoBeep extends TextAction {
 
         /**
          * Creates this object with the appropriate identifier.

@@ -1,4 +1,8 @@
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 
 import javax.swing.*;
@@ -9,13 +13,15 @@ import javax.swing.border.BevelBorder;
 public class NetChecker extends JFrame {
     private final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
     private final JPanel contentPane = new JPanel();
-    private final JIp4AddressInput connectIP = new JIp4AddressInput();
+    private final JIp4Control connectIP = new JIp4Control();
     private final JTextField connectPort = new JTextField();
     private final JTextField listenPort = new JTextField();
     private final JCheckBox chckbxHexReceive = new JCheckBox("Hex");
     private final JCheckBox chckbxHexSend = new JCheckBox("Hex");
     private final JTextArea textAreaRx = new JTextArea();
     private final JTextArea textAreaTx = new JTextArea();
+    private final JTextField dnsDomainName = new JTextField();
+    private final JIp4Control dnsIP4Address = new JIp4Control();
 
     private final SocketClass sc = new SocketClass(new Callback() {
         @Override
@@ -134,6 +140,43 @@ public class NetChecker extends JFrame {
         JPanel panel_2 = new JPanel();
         tabbedPane.addTab("DNS", null, panel_2, null);
         panel_2.setLayout(null);
+
+        dnsDomainName.setBounds(130, 71, 226, 20);
+        panel_2.add(dnsDomainName);
+        dnsDomainName.setColumns(10);
+
+        JLabel lblTargetDomain = new JLabel("Target Domain");
+        lblTargetDomain.setBounds(202, 46, 100, 14);
+        panel_2.add(lblTargetDomain);
+
+        JLabel lblHasThisIpv = new JLabel("has this IP4V Address");
+        lblHasThisIpv.setBounds(188, 102, 130, 14);
+        panel_2.add(lblHasThisIpv);
+
+        dnsIP4Address.setBounds(164, 127, 158, 20);
+        panel_2.add(dnsIP4Address);
+        dnsIP4Address.setColumns(10);
+
+        JButton btnQuery = new JButton(" Query ...");
+        btnQuery.addActionListener(e -> {
+            try {
+                InetAddress i = InetAddress.getByName(dnsDomainName.getText());
+                dnsIP4Address.putAddress(i);
+            } catch (UnknownHostException unknownHostException) {
+                System.out.println("Host not found");
+            }
+        });
+        btnQuery.setBounds(199, 163, 89, 23);
+        panel_2.add(btnQuery);
+
+        JButton cpToTCP = new JButton("Copy to TCP");
+        cpToTCP.addActionListener(e -> {
+            connectIP.putAddress(dnsIP4Address.getAddress());
+            tabbedPane.setSelectedIndex(0);
+        });
+        cpToTCP.setBounds (330, 127, 158, 23);  //(164, 300, 158, 23);
+        panel_2.add(cpToTCP);
+
     }
 
     /**
