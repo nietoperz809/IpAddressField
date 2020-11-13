@@ -13,8 +13,9 @@ public final class JIp4Control extends JTextField
 
     private int bpos = 0;
 
-    private void putnum (int num, final int offset)
+    private void putIpPart(int num, final int offset)
     {
+        num = num & 0xff;
         final int a = num/100;
         num -= a*100;
         final int b = num/10;
@@ -159,28 +160,28 @@ public final class JIp4Control extends JTextField
 
     ////////////////////////////////////////////////////////////////////////////////////////
 
-    public final InetAddress getAddress()
+    public final InetAddress getAddress() throws UnknownHostException
     {
         final String[] parts = new String(this.buff).split("\\.");
         final byte[] adr = new byte[4];
         for (int s = 0; 4 > s; s++)
             adr[s] = (byte)Integer.parseInt(parts[s].trim());
-        try {
-            return InetAddress.getByAddress(adr);
-        } catch (final UnknownHostException e) {
-            return null;
-        }
+        return InetAddress.getByAddress(adr);
+    }
+
+    public final void putAddress(byte[] adr)
+    {
+        this.putIpPart(adr[0], 0);
+        this.putIpPart(adr[1], 4);
+        this.putIpPart(adr[2], 8);
+        this.putIpPart(adr[3], 12);
+        this.alignAll();
+        this.setText(new String(this.buff));
     }
 
     public final void putAddress(final InetAddress in)
     {
-        final byte[] adr = in.getAddress();
-        this.putnum(adr[0]&0xff, 0);
-        this.putnum(adr[1]&0xff, 4);
-        this.putnum(adr[2]&0xff, 8);
-        this.putnum(adr[3]&0xff, 12);
-        this.alignAll();
-        this.setText(new String(this.buff));
+        putAddress (in.getAddress());
     }
 
     @Override

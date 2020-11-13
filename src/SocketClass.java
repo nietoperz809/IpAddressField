@@ -42,7 +42,8 @@ public class SocketClass {
     };
     ExecutorService exec = Executors.newFixedThreadPool(10);
 
-    public SocketClass(Callback cb) {
+    public SocketClass(Callback cb)
+    {
         this.cb = cb;
     }
 
@@ -54,16 +55,21 @@ public class SocketClass {
         this.cb = cb;
     }
 
+    public void sendDirect (byte[] buff)
+    {
+        try {
+            OutputStream os = socket.getOutputStream();
+            os.write(buff);
+        } catch (IOException e) {
+            invokeLater(() -> cb.error("send failed"));
+        }
+    }
+
     public void send (byte[] buff)
     {
         exec.submit(() ->
         {
-            try {
-                OutputStream os = socket.getOutputStream();
-                os.write(buff);
-            } catch (IOException e) {
-                invokeLater(() -> cb.error("send failed"));
-            }
+            sendDirect(buff);
         });
     }
 

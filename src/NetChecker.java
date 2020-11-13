@@ -1,6 +1,4 @@
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
@@ -11,6 +9,7 @@ import javax.swing.border.BevelBorder;
 
 //@SuppressWarnings({"LocalVariableOfConcreteClass", "MagicNumber"})
 public class NetChecker extends JFrame {
+    private PeriodicalTransmitter perTX;
     private final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
     private final JPanel contentPane = new JPanel();
     private final JIp4Control connectIP = new JIp4Control();
@@ -22,6 +21,8 @@ public class NetChecker extends JFrame {
     private final JTextArea textAreaTx = new JTextArea();
     private final JTextField dnsDomainName = new JTextField();
     private final JIp4Control dnsIP4Address = new JIp4Control();
+    private final JTextField perTxInterval = new JTextField();
+
 
     private final SocketClass sc = new SocketClass(new Callback() {
         @Override
@@ -43,11 +44,11 @@ public class NetChecker extends JFrame {
     public NetChecker() {
         setTitle("NetTester");
         setDefaultCloseOperation (WindowConstants.EXIT_ON_CLOSE);
-        setBounds(100, 100, 552, 308);
+        setBounds(100, 100, 552, 392);
         contentPane.setBorder(new EmptyBorder(0, 0, 0, 0));
         setContentPane(contentPane);
         contentPane.setLayout(null);
-        tabbedPane.setBounds(0, 1, 536, 268);
+        tabbedPane.setBounds(0, 1, 536, 352);
         contentPane.add(tabbedPane);
 
         JPanel panel = new JPanel();
@@ -133,6 +134,33 @@ public class NetChecker extends JFrame {
         chckbxHexReceive.setBounds(370, 217, 97, 23);
         panel.add(chckbxHexReceive);
 
+        JCheckBox chckbxRepeat = new JCheckBox("Repeat Millisecs >>");
+        chckbxRepeat.addActionListener(e -> {
+            if (chckbxRepeat.isSelected())
+            {
+                perTX = new PeriodicalTransmitter(sc, textAreaTx);
+                int interval;
+                try {
+                    interval = Integer.parseInt(perTxInterval.getText());
+                } catch (NumberFormatException numberFormatException) {
+                    interval = 1000;
+                    perTxInterval.setText("1000");
+                }
+                perTX.start (interval, chckbxHexSend.isSelected());
+            }
+            else
+            {
+                perTX.stop();
+            }
+        });
+        chckbxRepeat.setBounds(20, 247, 135, 23);
+        panel.add(chckbxRepeat);
+
+        perTxInterval.setBounds(155, 247, 86, 20);
+        perTxInterval.setText ("1000");
+        panel.add(perTxInterval);
+        perTxInterval.setColumns(10);
+
         JPanel panel_1 = new JPanel();
         tabbedPane.addTab("UDP", null, panel_1, null);
         panel_1.setLayout(null);
@@ -171,7 +199,11 @@ public class NetChecker extends JFrame {
 
         JButton cpToTCP = new JButton("Copy to TCP");
         cpToTCP.addActionListener(e -> {
-            connectIP.putAddress(dnsIP4Address.getAddress());
+            try {
+                connectIP.putAddress(dnsIP4Address.getAddress());
+            } catch (UnknownHostException unknownHostException) {
+                unknownHostException.printStackTrace();
+            }
             tabbedPane.setSelectedIndex(0);
         });
         cpToTCP.setBounds (330, 127, 158, 23);  //(164, 300, 158, 23);
