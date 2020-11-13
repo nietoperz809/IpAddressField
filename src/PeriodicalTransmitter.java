@@ -4,15 +4,15 @@ import java.util.TimerTask;
 
 public class PeriodicalTransmitter {
     private final JTextArea source;
-    private final SocketClass transmitter;
+    private final TCPSocket transmitter;
     private Timer timer;
 
-    public PeriodicalTransmitter(SocketClass sc, JTextArea source) {
+    public PeriodicalTransmitter(TCPSocket sc, JTextArea source) {
         this.transmitter = sc;
         this.source = source;
     }
 
-    public void start(int millisecs, boolean asHex) {
+    public void start(int millisecs, boolean asHex) throws Exception {
         timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override

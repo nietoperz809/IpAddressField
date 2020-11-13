@@ -1,4 +1,4 @@
-import java.awt.EventQueue;
+import java.awt.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
@@ -10,8 +10,9 @@ import javax.swing.border.BevelBorder;
 //@SuppressWarnings({"LocalVariableOfConcreteClass", "MagicNumber"})
 public class NetChecker extends JFrame {
     private PeriodicalTransmitter perTX;
+    private final JCheckBox chckbxRepeat = new JCheckBox("Repeat Millisecs >>");
+    private final JPanel mainPanel = new JPanel();
     private final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-    private final JPanel contentPane = new JPanel();
     private final JIp4Control connectIP = new JIp4Control();
     private final JTextField connectPort = new JTextField();
     private final JTextField listenPort = new JTextField();
@@ -22,9 +23,10 @@ public class NetChecker extends JFrame {
     private final JTextField dnsDomainName = new JTextField();
     private final JIp4Control dnsIP4Address = new JIp4Control();
     private final JTextField perTxInterval = new JTextField();
+    private final JToggleButton tglbtnConnect = new JToggleButton("Connect");
+    private final JToggleButton tglbtnListen = new JToggleButton("Listen");
 
-
-    private final SocketClass sc = new SocketClass(new Callback() {
+    private final TCPSocket sc = new TCPSocket(new Callback() {
         @Override
         public void received(byte[] buff, int n) {
             String str;
@@ -36,74 +38,109 @@ public class NetChecker extends JFrame {
             textAreaRx.setCaretPosition(textAreaRx.getDocument().getLength());
             textAreaRx.replaceSelection(str);
         }
+
+        void doForSocketClose()
+        {
+            if (perTX != null)
+            {
+                perTX.stop();
+                perTX = null;
+            }
+            tglbtnConnect.setSelected(false);
+            tglbtnListen.setSelected(false);
+            chckbxRepeat.setSelected(false);
+        }
+
+        @Override
+        public void closed() {
+            doForSocketClose();
+            JOptionPane.showMessageDialog(mainPanel,
+                    "Socket closed",
+                    "Info",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
+
+        @Override
+        public void error(String info) {
+            doForSocketClose();
+            JOptionPane.showMessageDialog(mainPanel,
+                    info,
+                    "Socket error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     });
 
     /**
      * Create the frame.
      */
     public NetChecker() {
-        setTitle("NetTester");
+        setTitle("IP Tester");
         setDefaultCloseOperation (WindowConstants.EXIT_ON_CLOSE);
-        setBounds(100, 100, 552, 392);
+        setResizable(false);
+        setBounds(100, 100, 542, 382);
+        JPanel contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(0, 0, 0, 0));
         setContentPane(contentPane);
         contentPane.setLayout(null);
-        tabbedPane.setBounds(0, 1, 536, 352);
+        tabbedPane.setBounds(0, 0, 536, 352);
         contentPane.add(tabbedPane);
 
-        JPanel panel = new JPanel();
-        tabbedPane.addTab("TCP", null, panel, null);
-        panel.setLayout(null);
+        tabbedPane.addTab("TCP", null, mainPanel, null);
+        mainPanel.setLayout(null);
 
-        JToggleButton tglbtnConnect = new JToggleButton("Connect");
-//        tglbtnConnect.addActionListener(new ActionListener() {
-//            SocketClass sc = new SocketClass();
-//
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                if (tglbtnConnect.isSelected())
-//                    sc.connect(connectIP.getAddress(), 80); // Google: 172.217.23.142
-//                else
-//                    sc.close();
-//            }
-//        });
+        tglbtnConnect.addActionListener(e -> {
+            if (tglbtnConnect.isSelected())
+            {
+                try {
+                    InetAddress in = connectIP.getAddress();
+                    int port = Integer.parseInt(connectPort.getText());
+                    sc.connect (in, port); // Google: 172.217.23.142
+                } catch (Exception ex) {
+                    tglbtnConnect.setSelected(false);
+                }
+            }
+            else
+                sc.close();
+        });
         tglbtnConnect.setBounds(10, 11, 83, 23);
-        panel.add(tglbtnConnect);
+        mainPanel.add(tglbtnConnect);
 
         connectIP.setBounds(103, 12, 110, 20);
-        panel.add(connectIP);
+        mainPanel.add(connectIP);
         connectIP.setColumns(10);
 
         connectPort.setBounds(215, 12, 52, 20);
-        panel.add(connectPort);
+        mainPanel.add(connectPort);
         connectPort.setColumns(10);
 
-        JToggleButton tglbtnListen = new JToggleButton("Listen");
         tglbtnListen.addActionListener(e -> {
             if (tglbtnListen.isSelected()) {
-                int port = Integer.parseInt(listenPort.getText().trim());
-                sc.listen(port);
+                try {
+                    int port = Integer.parseInt(listenPort.getText().trim());
+                    sc.listen(port);
+                } catch (NumberFormatException numberFormatException) {
+                    tglbtnListen.setSelected(false);
+                }
             } else
                 sc.close();
         });
-
         tglbtnListen.setBounds(313, 11, 83, 23);
-        panel.add(tglbtnListen);
+        mainPanel.add(tglbtnListen);
 
         listenPort.setColumns(10);
         listenPort.setBounds(406, 12, 86, 20);
-        panel.add(listenPort);
+        mainPanel.add(listenPort);
 
         textAreaTx.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
         textAreaTx.setLineWrap(true);
         textAreaTx.setBounds(10, 37, 252, 175);
-        panel.add(textAreaTx);
+        mainPanel.add(textAreaTx);
 
         JScrollPane sp1 = new JScrollPane(textAreaRx);
         textAreaRx.setLineWrap(true);
         sp1.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
         sp1.setBounds(272, 37, 252, 175);
-        panel.add(sp1);
+        mainPanel.add(sp1);
 
         JButton btnSend = new JButton("Send");
         btnSend.addActionListener(e -> {
@@ -117,24 +154,23 @@ public class NetChecker extends JFrame {
             sc.send(bt);
         });
         btnSend.setBounds(10, 217, 89, 23);
-        panel.add(btnSend);
+        mainPanel.add(btnSend);
 
         JLabel lblReceived = new JLabel("Received");
         lblReceived.setBounds(296, 223, 66, 14);
-        panel.add(lblReceived);
+        mainPanel.add(lblReceived);
 
         chckbxHexSend.setBounds(120, 217, 97, 23);
-        panel.add(chckbxHexSend);
+        mainPanel.add(chckbxHexSend);
 
         JButton btnClrRx = new JButton("Clear");
         btnClrRx.addActionListener(e -> textAreaRx.setText(""));
         btnClrRx.setBounds(430, 217, 89, 23);
-        panel.add(btnClrRx);
+        mainPanel.add(btnClrRx);
 
-        chckbxHexReceive.setBounds(370, 217, 97, 23);
-        panel.add(chckbxHexReceive);
+        chckbxHexReceive.setBounds(370, 217, 50, 23);
+        mainPanel.add(chckbxHexReceive);
 
-        JCheckBox chckbxRepeat = new JCheckBox("Repeat Millisecs >>");
         chckbxRepeat.addActionListener(e -> {
             if (chckbxRepeat.isSelected())
             {
@@ -142,11 +178,10 @@ public class NetChecker extends JFrame {
                 int interval;
                 try {
                     interval = Integer.parseInt(perTxInterval.getText());
-                } catch (NumberFormatException numberFormatException) {
-                    interval = 1000;
-                    perTxInterval.setText("1000");
+                    perTX.start (interval, chckbxHexSend.isSelected());
+                } catch (Exception ex) {
+                    chckbxRepeat.setSelected(false);
                 }
-                perTX.start (interval, chckbxHexSend.isSelected());
             }
             else
             {
@@ -154,11 +189,11 @@ public class NetChecker extends JFrame {
             }
         });
         chckbxRepeat.setBounds(20, 247, 135, 23);
-        panel.add(chckbxRepeat);
+        mainPanel.add(chckbxRepeat);
 
         perTxInterval.setBounds(155, 247, 86, 20);
         perTxInterval.setText ("1000");
-        panel.add(perTxInterval);
+        mainPanel.add(perTxInterval);
         perTxInterval.setColumns(10);
 
         JPanel panel_1 = new JPanel();
@@ -208,7 +243,6 @@ public class NetChecker extends JFrame {
         });
         cpToTCP.setBounds (330, 127, 158, 23);  //(164, 300, 158, 23);
         panel_2.add(cpToTCP);
-
     }
 
     /**
@@ -217,6 +251,8 @@ public class NetChecker extends JFrame {
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             try {
+                UIManager.put("ToggleButton.select", Color.GREEN);
+                SwingUtilities.updateComponentTreeUI(new JToggleButton());
                 NetChecker frame = new NetChecker();
                 frame.setVisible(true);
             } catch (Exception e) {

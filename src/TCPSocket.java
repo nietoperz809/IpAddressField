@@ -35,19 +35,19 @@ interface Callback {
 
 }
 
-public class SocketClass {
+public class TCPSocket {
     Socket socket;
     ServerSocket srvs;
     Callback cb = new Callback() {
     };
     ExecutorService exec = Executors.newFixedThreadPool(10);
 
-    public SocketClass(Callback cb)
+    public TCPSocket(Callback cb)
     {
         this.cb = cb;
     }
 
-    public SocketClass() {
+    public TCPSocket() {
     }
 
     public void setCallback (Callback cb)
@@ -60,7 +60,7 @@ public class SocketClass {
         try {
             OutputStream os = socket.getOutputStream();
             os.write(buff);
-        } catch (IOException e) {
+        } catch (Exception e) {
             invokeLater(() -> cb.error("send failed"));
         }
     }
