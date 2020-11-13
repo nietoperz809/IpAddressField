@@ -1,56 +1,72 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Utils
-{
+public class Utils {
     static private final char[] hex = "0123456789ABCDEF".toCharArray();
 
-    public static byte[] readHex (String in)
-    {
+    public static byte[] readHex(String in) {
         ArrayList<Byte> arr = new ArrayList<>();
         int state = 0;
         int bt = 0;
-        for (char c : in.toCharArray())
-        {
+        for (char c : in.toCharArray()) {
             c = Character.toLowerCase(c);
             int a = 0;
-            if (c >= '0' && c <='9')
-            {
-                a = c-'0';
-            }
-            else if (c >= 'a' && c <= 'f')
-            {
-                a = c-'a'+10;
-            }
-            else
+            if (c >= '0' && c <= '9') {
+                a = c - '0';
+            } else if (c >= 'a' && c <= 'f') {
+                a = c - 'a' + 10;
+            } else
                 continue;
             a &= 15;
-            switch (state)
-            {
+            switch (state) {
                 case 0:
-                    bt = a<<4;
+                    bt = a << 4;
                     state = 1;
                     break;
                 case 1:
                     bt = bt | a;
-                    arr.add((byte)bt);
+                    arr.add((byte) bt);
                     state = 0;
                     break;
             }
         }
         byte[] ret = new byte[arr.size()];
-        for (int s=0; s<ret.length; s++)
-        {
+        for (int s = 0; s < ret.length; s++) {
             ret[s] = arr.get(s);
         }
         return ret;
     }
 
-    public static String toHex (byte[] in, int len)
-    {
+    public static String unescape(String in) {
+        StringBuffer sb = new StringBuffer();
+        int state = 0;
+        for (char c : in.toCharArray()) {
+            if (state == 0) {
+                if (c == '\r' || c == '\n')
+                    continue;
+                if (c == '\\')
+                    state = 1;
+                else
+                    sb.append(c);
+            } else {
+                if (c == 'r') {
+                    sb.append('\r');
+                } else if (c == 'n') {
+                    sb.append('\n');
+                } else if (c == '\\') {
+                    sb.append('\\');
+                }
+                state = 0;
+            }
+        }
+        if (state == 1)
+            sb.append('\\');
+        return sb.toString();
+    }
+
+    public static String toHex(byte[] in, int len) {
         StringBuilder buf = new StringBuilder();
-        for (int s=0; s<len; s++)
-        {
+        for (int s = 0; s < len; s++) {
             byte b = in[s];
             buf.append(hex[b >>> 4]);
             buf.append(hex[b & 0x0f]);
@@ -60,7 +76,8 @@ public class Utils
     }
 
     public static void main(String[] args) {
-        byte[] bb = readHex("1gghhzzatt");
+        String s = unescape ("hello\\r\\n \\\\\r\n ");
+        byte[] bb = s.getBytes();
         System.out.println(Arrays.toString(bb));
     }
 }

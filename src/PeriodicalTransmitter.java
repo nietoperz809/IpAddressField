@@ -19,7 +19,7 @@ public class PeriodicalTransmitter {
             public void run() {
                 byte[] buff;
                 if (!asHex)
-                    buff = source.getText().getBytes();
+                    buff = Utils.unescape(source.getText()).getBytes();
                 else
                     buff = Utils.readHex(source.getText());
                 transmitter.sendDirect(buff);
@@ -27,8 +27,11 @@ public class PeriodicalTransmitter {
         }, 0, millisecs);
     }
 
-    public void stop() {
-        timer.cancel();
-        timer = null;
+    public void stop()
+    {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
     }
 }

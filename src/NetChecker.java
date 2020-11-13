@@ -68,6 +68,15 @@ public class NetChecker extends JFrame {
                     "Socket error",
                     JOptionPane.ERROR_MESSAGE);
         }
+
+        @Override
+        public void rxfail() {
+            doForSocketClose();
+            JOptionPane.showMessageDialog(mainPanel,
+                    "Connection closed by peer",
+                    "Socket error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     });
 
     /**
@@ -149,7 +158,7 @@ public class NetChecker extends JFrame {
             if (chckbxHexSend.isSelected()) {
                 bt = Utils.readHex(str);
             } else {
-                bt = str.getBytes();
+                bt = Utils.unescape(str).getBytes();
             }
             sc.send(bt);
         });
