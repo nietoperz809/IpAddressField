@@ -67,18 +67,22 @@ public class UdpSocket {
         }
     }
 
+    public void sendDirect (InetAddress ip, int port, byte[] dat)
+    {
+        DatagramPacket pkt = new DatagramPacket (dat, dat.length, ip, port);
+        try {
+            DatagramSocket sock = new DatagramSocket();
+            sock.setBroadcast(true);
+            sock.send (pkt);
+        } catch (IOException e) {
+            invokeLater(() -> cb.txfail());
+        }
+    }
 
     public void send (InetAddress ip, int port, byte[] dat)
     {
         Utils.exec.submit(() -> {
-            DatagramPacket pkt = new DatagramPacket (dat, dat.length, ip, port);
-            try {
-                DatagramSocket sock = new DatagramSocket();
-                sock.setBroadcast(true);
-                sock.send (pkt);
-            } catch (IOException e) {
-                invokeLater(() -> cb.txfail());
-            }
+            sendDirect(ip, port, dat);
         });
     }
 

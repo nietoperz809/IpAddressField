@@ -35,18 +35,18 @@ interface Callback {
 
 }
 
-public class TCPSocket {
+public class TcpSocket {
     Socket socket;
     ServerSocket srvs;
     Callback cb = new Callback() {
     };
 
-    public TCPSocket(Callback cb)
+    public TcpSocket(Callback cb)
     {
         this.cb = cb;
     }
 
-    public TCPSocket() {
+    public TcpSocket() {
     }
 
     public void setCallback (Callback cb)

@@ -5,13 +5,18 @@ import java.awt.event.ActionListener;
 import java.net.UnknownHostException;
 
 public class UdpPanel extends JPanel {
-    private JTextField RxPort;
-    private JIp4Control TxIP;
-    private JTextField TxPort;
-    private JTextField TxPeriod;
-    private JIp4Control RxIP;
+    private final JCheckBox TxHex = new JCheckBox("Hex");
+    private final JCheckBox RxHex = new JCheckBox("Hex");
+    private final JTextField RxPort;
+    private final JIp4Control TxIP;
+    private final JTextField TxPort;
+    private final JTextField TxPeriod = new JTextField();
+    private final JIp4Control RxIP;
     private final JTextArea RxText = new JTextArea();
+    private final JTextArea TxText = new JTextArea();
     private final JToggleButton RxTglButton = new JToggleButton("Rx");
+
+    private PeriodicalUdpTransmitter udpTrans;
 
     private final UdpSocket sock = new UdpSocket(new UDPCallback() {
         @Override
@@ -22,8 +27,10 @@ public class UdpPanel extends JPanel {
 
         @Override
         public void rxdata(byte[] dat, int len) {
-            String str = new String (dat, 0, len);
-            RxText.append(str);
+            if (RxHex.isSelected())
+                RxText.append (Utils.toHex(dat, len));
+            else
+                RxText.append(new String (dat, 0, len));
         }
     });
 
@@ -32,8 +39,6 @@ public class UdpPanel extends JPanel {
      */
     public UdpPanel() {
         setLayout(null);
-        //setBounds(0, 0, 536, 352);
-
 
         JScrollPane scrollPane = new JScrollPane();
         scrollPane.setBounds(292, 43, 234, 223);
@@ -45,7 +50,6 @@ public class UdpPanel extends JPanel {
         scrollPane_1.setBounds(10, 43, 250, 223);
         add(scrollPane_1);
 
-        JTextArea TxText = new JTextArea();
         scrollPane_1.setViewportView(TxText);
 
         RxPort = new JTextField();
@@ -64,24 +68,49 @@ public class UdpPanel extends JPanel {
         TxPort.setColumns(10);
 
         JButton TxButton = new JButton("Tx");
+        TxButton.addActionListener(e -> {
+            try {
+                byte[] buff;
+                if (TxHex.isSelected())
+                    buff = Utils.readHex(TxText.getText());
+                else
+                    buff = Utils.unescape(TxText.getText()).getBytes();
+                sock.send (TxIP.getAddress(), Integer.parseInt(TxPort.getText()), buff);
+            } catch (Exception ex) {
+                System.out.println("Tx high level fail");
+            }
+        });
         TxButton.setMargin(new Insets(2, 2, 2, 2));
         TxButton.setBounds(29, 11, 30, 23);
         add(TxButton);
 
         JCheckBox TxRepeat = new JCheckBox("Repeat >>");
+        TxRepeat.addActionListener(e -> {
+            if (TxRepeat.isSelected())
+            {
+                try {
+                    udpTrans = new PeriodicalUdpTransmitter(sock, TxText, TxIP.getAddress(), Integer.parseInt(TxPort.getText()));
+                    udpTrans.start (Integer.parseInt(TxPeriod.getText()), TxHex.isSelected());
+                } catch (Exception exception) {
+                    TxRepeat.setSelected(false);
+                }
+            }
+            else
+            {
+                udpTrans.stop();
+                udpTrans = null;
+            }
+        });
         TxRepeat.setBounds(35, 290, 86, 23);
         add(TxRepeat);
 
-        TxPeriod = new JTextField();
         TxPeriod.setBounds(127, 291, 86, 20);
         add(TxPeriod);
         TxPeriod.setColumns(10);
 
-        JCheckBox TxHex = new JCheckBox("Hex");
         TxHex.setBounds(96, 268, 97, 23);
         add(TxHex);
 
-        JCheckBox RxHex = new JCheckBox("Hex");
         RxHex.setBounds(386, 268, 97, 23);
         add(RxHex);
 

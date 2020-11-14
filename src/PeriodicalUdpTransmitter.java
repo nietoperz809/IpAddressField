@@ -1,14 +1,20 @@
+
 import javax.swing.*;
+import java.net.InetAddress;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class PeriodicalTransmitter {
+public class PeriodicalUdpTransmitter {
     private final JTextArea source;
-    private final TCPSocket transmitter;
+    private final UdpSocket udpTransmitter;
+    private final int port;
+    private final InetAddress dest;
     private Timer timer;
 
-    public PeriodicalTransmitter(TCPSocket sc, JTextArea source) {
-        this.transmitter = sc;
+    public PeriodicalUdpTransmitter(UdpSocket sc, JTextArea source, InetAddress dest, int port) {
+        this.dest = dest;
+        this.port = port;
+        this.udpTransmitter = sc;
         this.source = source;
     }
 
@@ -22,7 +28,7 @@ public class PeriodicalTransmitter {
                     buff = Utils.unescape(source.getText()).getBytes();
                 else
                     buff = Utils.readHex(source.getText());
-                transmitter.sendDirect(buff);
+                udpTransmitter.sendDirect (dest, port, buff);
             }
         }, 0, millisecs);
     }
