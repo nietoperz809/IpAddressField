@@ -40,7 +40,6 @@ public class TCPSocket {
     ServerSocket srvs;
     Callback cb = new Callback() {
     };
-    ExecutorService exec = Executors.newFixedThreadPool(10);
 
     public TCPSocket(Callback cb)
     {
@@ -67,7 +66,7 @@ public class TCPSocket {
 
     public void send (byte[] buff)
     {
-        exec.submit(() ->
+        Utils.exec.submit(() ->
         {
             sendDirect(buff);
         });
@@ -83,7 +82,7 @@ public class TCPSocket {
             }
         }
         if (socket != null) {
-            exec.submit(() ->
+            Utils.exec.submit(() ->
             {
                 try {
                     socket.close();
@@ -99,7 +98,7 @@ public class TCPSocket {
     }
 
     private void handleRx() {
-        exec.submit(() -> {
+        Utils.exec.submit(() -> {
             try {
                 InputStream in = socket.getInputStream();
                 while (true) {
@@ -122,7 +121,7 @@ public class TCPSocket {
     }
 
     public void listen(int port) {
-        exec.submit(() ->
+        Utils.exec.submit(() ->
         {
             try {
                 srvs = new ServerSocket(port);
@@ -136,7 +135,7 @@ public class TCPSocket {
     }
 
     public void connect(InetAddress addr, int port) {
-        exec.submit(() ->
+        Utils.exec.submit(() ->
         {
             try {
                 socket = new Socket(addr, port);

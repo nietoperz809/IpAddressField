@@ -205,7 +205,7 @@ public class NetChecker extends JFrame {
         mainPanel.add(perTxInterval);
         perTxInterval.setColumns(10);
 
-        JPanel panel_1 = new JPanel();
+        UdpPanel panel_1 = new UdpPanel();
         tabbedPane.addTab("UDP", null, panel_1, null);
         panel_1.setLayout(null);
 

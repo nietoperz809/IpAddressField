@@ -1,8 +1,11 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Utils {
     static private final char[] hex = "0123456789ABCDEF".toCharArray();
+    static public final ExecutorService exec = Executors.newFixedThreadPool(10);
 
     public static byte[] readHex(String in) {
         ArrayList<Byte> arr = new ArrayList<>();
@@ -49,13 +52,14 @@ public class Utils {
                 else
                     sb.append(c);
             } else {
-                if (c == 'r') {
+                if (c == 'r')
                     sb.append('\r');
-                } else if (c == 'n') {
+                else if (c == 'n')
                     sb.append('\n');
-                } else if (c == '\\') {
+                else if (c == '\\')
                     sb.append('\\');
-                }
+                else
+                    sb.append ('\\').append(c);
                 state = 0;
             }
         }

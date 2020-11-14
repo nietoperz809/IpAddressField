@@ -154,8 +154,7 @@ public final class JIp4Control extends JTextField
     public JIp4Control()
     {
         UIManager.put("TextField.inactiveBackground", new ColorUIResource(new Color(255, 255, 255)));
-
-        SwingUtilities.invokeLater(() -> delayedConstructor());
+        SwingUtilities.invokeLater(this::delayedConstructor);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////
