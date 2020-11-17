@@ -10,8 +10,8 @@ import javax.swing.border.BevelBorder;
 //@SuppressWarnings({"LocalVariableOfConcreteClass", "MagicNumber"})
 public class NetChecker extends JFrame {
     private PeriodicalTcpTransmitter perTX;
-    private final JCheckBox chckbxRepeat = new JCheckBox("Repeat Millisecs >>");
-    private final JPanel mainPanel = new JPanel();
+    private final JToggleButton chckbxRepeat = new JToggleButton("Repeat Millisecs >>");
+    private final JPanel tcpPanel = new JPanel();
     private final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
     private final JIp4Control connectIP = new JIp4Control();
     private final JTextField connectPort = new JTextField();
@@ -52,30 +52,26 @@ public class NetChecker extends JFrame {
         }
 
         @Override
+        public void connected() {
+            Utils.infoBox (tcpPanel, "Connection established", "Info");
+        }
+
+        @Override
         public void closed() {
             doForSocketClose();
-            JOptionPane.showMessageDialog(mainPanel,
-                    "Socket closed",
-                    "Info",
-                    JOptionPane.INFORMATION_MESSAGE);
+            Utils.infoBox (tcpPanel, "Socket closed", "Info");
         }
 
         @Override
         public void error(String info) {
             doForSocketClose();
-            JOptionPane.showMessageDialog(mainPanel,
-                    info,
-                    "Socket error",
-                    JOptionPane.ERROR_MESSAGE);
+            Utils.errorBox (tcpPanel, info, "Socket error");
         }
 
         @Override
         public void rxfail() {
             doForSocketClose();
-            JOptionPane.showMessageDialog(mainPanel,
-                    "Connection closed by peer",
-                    "Socket error",
-                    JOptionPane.ERROR_MESSAGE);
+            Utils.errorBox (tcpPanel, "Connection closed", "Socket error");
         }
     });
 
@@ -86,16 +82,23 @@ public class NetChecker extends JFrame {
         setTitle("IP Tester");
         setDefaultCloseOperation (WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
-        setBounds(100, 100, 542, 382);
+        setBounds(100, 100, 552, 402);
         JPanel contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(0, 0, 0, 0));
         setContentPane(contentPane);
-        contentPane.setLayout(null);
-        tabbedPane.setBounds(0, 0, 536, 352);
-        contentPane.add(tabbedPane);
+        contentPane.setLayout(new BorderLayout());
+        //tabbedPane.setBounds(0, 0, 552, 352);
+        contentPane.add(tabbedPane, BorderLayout.CENTER);
 
-        tabbedPane.addTab("TCP", null, mainPanel, null);
-        mainPanel.setLayout(null);
+//        JLabel lab1 = new JLabel("hello");
+//        lab1.setBackground(Color.BLACK);
+//        lab1.setForeground(Color.WHITE);
+//        lab1.setOpaque(true);
+//        contentPane.add (lab1, BorderLayout.SOUTH);
+
+        tabbedPane.addTab("TCP", null, tcpPanel, null);
+        tcpPanel.setLayout(null);
+        tcpPanel.setBackground (new Color (100,100,255));
 
         tglbtnConnect.addActionListener(e -> {
             if (tglbtnConnect.isSelected())
@@ -112,15 +115,15 @@ public class NetChecker extends JFrame {
                 sc.close();
         });
         tglbtnConnect.setBounds(10, 11, 83, 23);
-        mainPanel.add(tglbtnConnect);
+        tcpPanel.add(tglbtnConnect);
 
         connectIP.setBounds(103, 12, 110, 20);
-        mainPanel.add(connectIP);
-        connectIP.setColumns(10);
+        tcpPanel.add(connectIP);
+        //connectIP.setColumns(10);
 
         connectPort.setBounds(215, 12, 52, 20);
-        mainPanel.add(connectPort);
-        connectPort.setColumns(10);
+        tcpPanel.add(connectPort);
+        //connectPort.setColumns(10);
 
         tglbtnListen.addActionListener(e -> {
             if (tglbtnListen.isSelected()) {
@@ -134,22 +137,22 @@ public class NetChecker extends JFrame {
                 sc.close();
         });
         tglbtnListen.setBounds(313, 11, 83, 23);
-        mainPanel.add(tglbtnListen);
+        tcpPanel.add(tglbtnListen);
 
-        listenPort.setColumns(10);
+        //listenPort.setColumns(10);
         listenPort.setBounds(406, 12, 86, 20);
-        mainPanel.add(listenPort);
+        tcpPanel.add(listenPort);
 
         textAreaTx.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
         textAreaTx.setLineWrap(true);
         textAreaTx.setBounds(10, 37, 252, 175);
-        mainPanel.add(textAreaTx);
+        tcpPanel.add(textAreaTx);
 
         JScrollPane sp1 = new JScrollPane(textAreaRx);
         textAreaRx.setLineWrap(true);
         sp1.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
         sp1.setBounds(272, 37, 252, 175);
-        mainPanel.add(sp1);
+        tcpPanel.add(sp1);
 
         JButton btnSend = new JButton("Send");
         btnSend.addActionListener(e -> {
@@ -163,22 +166,22 @@ public class NetChecker extends JFrame {
             sc.send(bt);
         });
         btnSend.setBounds(10, 217, 89, 23);
-        mainPanel.add(btnSend);
+        tcpPanel.add(btnSend);
 
         JLabel lblReceived = new JLabel("Received");
         lblReceived.setBounds(296, 223, 66, 14);
-        mainPanel.add(lblReceived);
+        tcpPanel.add(lblReceived);
 
         chckbxHexSend.setBounds(120, 217, 97, 23);
-        mainPanel.add(chckbxHexSend);
+        tcpPanel.add(chckbxHexSend);
 
         JButton btnClrRx = new JButton("Clear");
         btnClrRx.addActionListener(e -> textAreaRx.setText(""));
         btnClrRx.setBounds(430, 217, 89, 23);
-        mainPanel.add(btnClrRx);
+        tcpPanel.add(btnClrRx);
 
         chckbxHexReceive.setBounds(370, 217, 50, 23);
-        mainPanel.add(chckbxHexReceive);
+        tcpPanel.add(chckbxHexReceive);
 
         chckbxRepeat.addActionListener(e -> {
             if (chckbxRepeat.isSelected())
@@ -198,11 +201,11 @@ public class NetChecker extends JFrame {
             }
         });
         chckbxRepeat.setBounds(20, 247, 135, 23);
-        mainPanel.add(chckbxRepeat);
+        tcpPanel.add(chckbxRepeat);
 
         perTxInterval.setBounds(155, 247, 86, 20);
         perTxInterval.setText ("1000");
-        mainPanel.add(perTxInterval);
+        tcpPanel.add(perTxInterval);
         perTxInterval.setColumns(10);
 
         UdpPanel panel_1 = new UdpPanel();

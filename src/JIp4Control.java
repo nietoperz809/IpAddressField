@@ -137,6 +137,10 @@ public final class JIp4Control extends JTextField
                 {
                     JIp4Control.this.setChar(c);
                 }
+                else if (c == '.')
+                {
+                    fwd();
+                }
                 else if (KeyEvent.VK_BACK_SPACE == c)
                 {
                     JIp4Control.this.backspace();

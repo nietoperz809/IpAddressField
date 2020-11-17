@@ -7,7 +7,8 @@ import java.net.SocketException;
 import static javax.swing.SwingUtilities.invokeLater;
 
 interface UDPCallback {
-    default void txfail() {
+    default void txfail()
+    {
         System.out.println("Transmit Error");
     }
 
@@ -41,7 +42,7 @@ public class UdpSocket {
                     rxSocket.receive(packet);
                     invokeLater(() -> cb.rxdata(packet.getData(), packet.getLength()));
                 } catch (IOException e) {
-                    invokeLater(() -> cb.rxfail());
+                    invokeLater(cb::rxfail);
                     return;
                 }
             }
@@ -55,7 +56,7 @@ public class UdpSocket {
             rxSocket.setBroadcast(true);
             runRxLoop();
         } catch (SocketException e) {
-            invokeLater(() -> cb.rxfail());
+            invokeLater(cb::rxfail);
         }
     }
 
@@ -69,13 +70,14 @@ public class UdpSocket {
 
     public void sendDirect (InetAddress ip, int port, byte[] dat)
     {
-        DatagramPacket pkt = new DatagramPacket (dat, dat.length, ip, port);
         try {
+            DatagramPacket pkt = new DatagramPacket (dat, dat.length, ip, port);
             DatagramSocket sock = new DatagramSocket();
             sock.setBroadcast(true);
             sock.send (pkt);
-        } catch (IOException e) {
-            invokeLater(() -> cb.txfail());
+            Utils.playWaveFromResource("cpckey.wav");
+        } catch (Exception e) {
+            invokeLater(cb::txfail);
         }
     }
 
