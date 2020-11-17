@@ -59,6 +59,7 @@ public class TcpSocket {
         try {
             OutputStream os = socket.getOutputStream();
             os.write(buff);
+            Utils.playWaveFromResource("sound2.wav");
         } catch (Exception e) {
             invokeLater(() -> cb.error("send failed"));
         }

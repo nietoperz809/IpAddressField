@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="IpAddressField:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/IpAddressField_jar</output-path>
+    <root id="archive" name="IpAddressField.jar">
+      <element id="module-output" name="IpAddressField" />
+    </root>
+  </artifact>
+</component>

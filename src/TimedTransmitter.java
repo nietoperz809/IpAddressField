@@ -1,39 +1,36 @@
 import javax.swing.*;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
-public abstract class TimedTransmitter
-{
+public abstract class TimedTransmitter {
     JTextArea source;
-    Timer timer;
+    ScheduledExecutorService sched;
 
-    public TimedTransmitter (JTextArea src)
-    {
+    public TimedTransmitter(JTextArea src) {
         source = src;
     }
 
-    abstract void doSend (byte[] buff);
+    abstract void doSend(byte[] buff);
 
     public void start(int millisecs, boolean asHex) throws Exception {
-        timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                byte[] buff;
-                if (!asHex)
-                    buff = Utils.unescape(source.getText()).getBytes();
-                else
-                    buff = Utils.readHex(source.getText());
-                doSend (buff);
-            }
-        }, 0, millisecs);
+        sched = Executors.newScheduledThreadPool(1);
+        sched.scheduleAtFixedRate(() -> {
+            byte[] buff;
+            if (!asHex)
+                buff = Utils.unescape(source.getText()).getBytes();
+            else
+                buff = Utils.readHex(source.getText());
+            doSend(buff);
+        }, 0, millisecs, TimeUnit.MILLISECONDS);
     }
 
-    public void stop()
-    {
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
+    public void stop() {
+        if (sched != null) {
+            sched.shutdown();
+            sched = null;
         }
     }
 }
