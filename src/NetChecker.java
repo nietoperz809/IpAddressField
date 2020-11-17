@@ -9,7 +9,7 @@ import javax.swing.border.BevelBorder;
 
 //@SuppressWarnings({"LocalVariableOfConcreteClass", "MagicNumber"})
 public class NetChecker extends JFrame {
-    private PeriodicalTcpTransmitter perTX;
+    private TcpTransmitter perTX;
     private final JToggleButton chckbxRepeat = new JToggleButton("Repeat Millisecs >>");
     private final JPanel tcpPanel = new JPanel();
     private final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
@@ -118,12 +118,11 @@ public class NetChecker extends JFrame {
         tcpPanel.add(tglbtnConnect);
 
         connectIP.setBounds(103, 12, 110, 20);
+        connectIP.putAddress(new byte[]{127,0,0,1});
         tcpPanel.add(connectIP);
-        //connectIP.setColumns(10);
 
         connectPort.setBounds(215, 12, 52, 20);
         tcpPanel.add(connectPort);
-        //connectPort.setColumns(10);
 
         tglbtnListen.addActionListener(e -> {
             if (tglbtnListen.isSelected()) {
@@ -186,7 +185,7 @@ public class NetChecker extends JFrame {
         chckbxRepeat.addActionListener(e -> {
             if (chckbxRepeat.isSelected())
             {
-                perTX = new PeriodicalTcpTransmitter(sc, textAreaTx);
+                perTX = new TcpTransmitter(sc, textAreaTx);
                 int interval;
                 try {
                     interval = Integer.parseInt(perTxInterval.getText());

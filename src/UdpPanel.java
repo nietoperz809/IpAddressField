@@ -1,8 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.net.UnknownHostException;
 
 public class UdpPanel extends JPanel {
     private final JToggleButton TxRepeat = new JToggleButton("Repeat ms");
@@ -17,7 +14,7 @@ public class UdpPanel extends JPanel {
     private final JTextArea TxText = new JTextArea();
     private final JToggleButton RxTglButton = new JToggleButton("Rx");
 
-    private PeriodicalUdpTransmitter udpTrans;
+    private UdpTransmitter udpTrans;
 
     private final UdpSocket sock = new UdpSocket(new UDPCallback() {
         @Override
@@ -97,7 +94,7 @@ public class UdpPanel extends JPanel {
             if (TxRepeat.isSelected())
             {
                 try {
-                    udpTrans = new PeriodicalUdpTransmitter(sock, TxText, TxIP.getAddress(), Integer.parseInt(TxPort.getText()));
+                    udpTrans = new UdpTransmitter(sock, TxText, TxIP.getAddress(), Integer.parseInt(TxPort.getText()));
                     udpTrans.start (Integer.parseInt(TxPeriod.getText()), TxHex.isSelected());
                 } catch (Exception exception) {
                     TxRepeat.setSelected(false);
