@@ -1,6 +1,6 @@
 import javax.swing.*;
 
-public class TcpTransmitter extends TimedTransmitter {
+public class TcpTransmitter extends PeriodicTransmitter {
     private final TcpSocket socket;
 
     public TcpTransmitter(TcpSocket sc, JTextArea source) {

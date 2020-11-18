@@ -2,7 +2,7 @@
 import javax.swing.*;
 import java.net.InetAddress;
 
-public class UdpTransmitter extends TimedTransmitter {
+public class UdpTransmitter extends PeriodicTransmitter {
     private final UdpSocket socket;
     private final int port;
     private final InetAddress dest;

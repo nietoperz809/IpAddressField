@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
@@ -8,7 +9,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.BevelBorder;
 
 //@SuppressWarnings({"LocalVariableOfConcreteClass", "MagicNumber"})
-public class NetChecker extends JFrame {
+public class MainForm extends JFrame {
     private TcpTransmitter perTX;
     private final JToggleButton chckbxRepeat = new JToggleButton("Repeat Millisecs >>");
     private final JPanel tcpPanel = new JPanel();
@@ -78,7 +79,7 @@ public class NetChecker extends JFrame {
     /**
      * Create the frame.
      */
-    public NetChecker() {
+    public MainForm() {
         setTitle("IP Tester");
         setDefaultCloseOperation (WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
@@ -237,11 +238,29 @@ public class NetChecker extends JFrame {
                 InetAddress i = InetAddress.getByName(dnsDomainName.getText());
                 dnsIP4Address.putAddress(i);
             } catch (UnknownHostException unknownHostException) {
-                System.out.println("Host not found");
+                Utils.errorBox (this,"Unable to connect to DNS", "Check your network");
             }
         });
         btnQuery.setBounds(199, 163, 89, 23);
         panel_2.add(btnQuery);
+
+        JButton btnPing = new JButton(" Ping ...");
+        btnPing.addActionListener(e -> {
+            try {
+                InetAddress addr = dnsIP4Address.getAddress();
+                String name = addr.getHostName();
+                boolean res = addr.isReachable(6000);
+                if (res)
+                    Utils.infoBox(this, name + " is reachable", "Ping");
+                else
+                    Utils.errorBox(this, name + " did not answer", "Ping");
+            } catch (IOException ioException) {
+                Utils.errorBox(this, "Unable to ping", "Ping");
+            }
+
+        });
+        btnPing.setBounds(199, 200, 89, 23);
+        panel_2.add(btnPing);
 
         JButton cpToTCP = new JButton("Copy to TCP");
         cpToTCP.addActionListener(e -> {
@@ -264,7 +283,7 @@ public class NetChecker extends JFrame {
             try {
                 UIManager.put("ToggleButton.select", Color.GREEN);
                 SwingUtilities.updateComponentTreeUI(new JToggleButton());
-                NetChecker frame = new NetChecker();
+                MainForm frame = new MainForm();
                 frame.setVisible(true);
             } catch (Exception e) {
                 e.printStackTrace();

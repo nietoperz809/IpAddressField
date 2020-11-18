@@ -5,11 +5,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public abstract class TimedTransmitter {
+public abstract class PeriodicTransmitter {
     JTextArea source;
     ScheduledExecutorService sched;
 
-    public TimedTransmitter(JTextArea src) {
+    public PeriodicTransmitter(JTextArea src) {
         source = src;
     }
 

@@ -12,7 +12,7 @@ public class UdpPanel extends JPanel {
     private final JIp4Control RxIP;
     private final JTextArea RxText = new JTextArea();
     private final JTextArea TxText = new JTextArea();
-    private final JToggleButton RxTglButton = new JToggleButton("Rx");
+    private final JToggleButton RxButton = new JToggleButton("Rx");
 
     private UdpTransmitter udpTrans;
 
@@ -20,7 +20,7 @@ public class UdpPanel extends JPanel {
         @Override
         public void rxfail() {
             sock.stopReceive();
-            RxTglButton.setSelected(false);
+            RxButton.setSelected(false);
         }
 
         @Override
@@ -118,6 +118,11 @@ public class UdpPanel extends JPanel {
         TxHex.setBounds(96, 268, 97, 23);
         add(TxHex);
 
+        JButton rxClear = new JButton ("Clear");
+        rxClear.addActionListener(e -> RxText.setText(""));
+        rxClear.setBounds(292, 268, 80, 23);
+        add (rxClear);
+
         RxHex.setBounds(386, 268, 97, 23);
         add(RxHex);
 
@@ -127,20 +132,20 @@ public class UdpPanel extends JPanel {
         add(RxIP);
         //RxIP.setColumns(10);
 
-        RxTglButton.addActionListener(e -> {
-            if (RxTglButton.isSelected()) {
+        RxButton.addActionListener(e -> {
+            if (RxButton.isSelected()) {
                 try {
                     sock.startReceive(RxIP.getAddress(), Integer.parseInt(RxPort.getText()));
                 } catch (Exception ex) {
-                    RxTglButton.setSelected(false);
+                    RxButton.setSelected(false);
                 }
             } else {
                 sock.stopReceive();
             }
         });
-        RxTglButton.setMargin(new Insets(2, 2, 2, 2));
-        RxTglButton.setBounds(292, 9, 40, 23);
-        add(RxTglButton);
+        RxButton.setMargin(new Insets(2, 2, 2, 2));
+        RxButton.setBounds(292, 9, 40, 23);
+        add(RxButton);
     }
 }
 
